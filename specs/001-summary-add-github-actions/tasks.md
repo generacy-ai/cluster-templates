@@ -12,7 +12,7 @@
 
 ## Phase 1: Setup
 
-### T001 [US1] Create `.github/workflows/` directory structure
+### T001 [DONE] [US1] Create `.github/workflows/` directory structure
 **File**: `.github/workflows/` (directory)
 - Create the `.github/workflows/` directory (does not yet exist in the repo)
 - This is the standard location for GitHub Actions workflow files
@@ -21,7 +21,7 @@
 
 ## Phase 2: Implementation
 
-### T002 [US1, US2, US3] Create CI workflow file
+### T002 [DONE] [US1, US2, US3] Create CI workflow file
 **File**: `.github/workflows/ci.yml`
 - Define workflow name as `CI`
 - Configure `on` triggers:
@@ -45,31 +45,31 @@
 
 ## Phase 3: Local Validation
 
-### T003 [US1] Validate workflow YAML syntax
+### T003 [DONE] [US1] Validate workflow YAML syntax
 **File**: `.github/workflows/ci.yml`
 - Verify the YAML file is syntactically valid (parse with a YAML linter or manual review)
 - Confirm all GitHub Actions workflow keys are correct (`name`, `on`, `jobs`, `strategy`, `matrix`, `steps`)
 - Verify `actions/checkout@v4` is pinned to a specific major version
 
-### T004 [P] [US1] Validate Dockerfile builds locally (standard)
+### T004 [DONE] [P] [US1] Validate Dockerfile builds locally (standard)
 **File**: `standard/.devcontainer/Dockerfile`
 - Run `docker build -f standard/.devcontainer/Dockerfile standard/.devcontainer/` locally
 - Confirm it completes without errors
 - Verify the build context path matches the workflow step
 
-### T005 [P] [US1] Validate Dockerfile builds locally (microservices)
+### T005 [DONE] [P] [US1] Validate Dockerfile builds locally (microservices)
 **File**: `microservices/.devcontainer/Dockerfile`
 - Run `docker build -f microservices/.devcontainer/Dockerfile microservices/.devcontainer/` locally
 - Confirm it completes without errors
 - Verify the build context path matches the workflow step
 
-### T006 [P] [US2] Validate Docker Compose config locally (standard)
+### T006 [DONE] [P] [US2] Validate Docker Compose config locally (standard)
 **File**: `standard/.devcontainer/docker-compose.yml`
 - Run with stub env vars: `REPO_URL=https://github.com/example/repo REPO_BRANCH=main docker compose -f standard/.devcontainer/docker-compose.yml config`
 - Confirm it outputs the resolved config without errors
 - Verify `${HOME}/.claude.json` bind mount doesn't cause config validation failure
 
-### T007 [P] [US2] Validate Docker Compose config locally (microservices)
+### T007 [DONE] [P] [US2] Validate Docker Compose config locally (microservices)
 **File**: `microservices/.devcontainer/docker-compose.yml`
 - Run with stub env vars: `REPO_URL=https://github.com/example/repo REPO_BRANCH=main docker compose -f microservices/.devcontainer/docker-compose.yml config`
 - Confirm it outputs the resolved config without errors
@@ -79,13 +79,13 @@
 
 ## Phase 4: Verification
 
-### T008 [US3] Review matrix naming and CI output clarity
+### T008 [DONE] [US3] Review matrix naming and CI output clarity
 **File**: `.github/workflows/ci.yml`
 - Confirm job name template `Validate ${{ matrix.variant }}` will render as "Validate standard" and "Validate microservices" in Actions UI
 - Verify each step has a descriptive `name` field so build and compose validation output are clearly separated in logs
 - Confirm no `> /dev/null` or output suppression that would hide error details
 
-### T009 [US1, US2] Cross-reference spec acceptance criteria
+### T009 [DONE] [US1, US2] Cross-reference spec acceptance criteria
 **Files**:
 - `.github/workflows/ci.yml`
 - `specs/001-summary-add-github-actions/spec.md`

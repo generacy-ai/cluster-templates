@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  validate:
+    name: Validate ${{ matrix.variant }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        variant: [standard, microservices]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Dockerfile
+        run: docker build -f ${{ matrix.variant }}/.devcontainer/Dockerfile ${{ matrix.variant }}/.devcontainer/
+
+      - name: Validate Docker Compose config
+        env:
+          REPO_URL: https://github.com/example/repo
+          REPO_BRANCH: main
+        run: docker compose -f ${{ matrix.variant }}/.devcontainer/docker-compose.yml config
