@@ -1,0 +1,138 @@
+# Generacy Development Cluster - Microservices
+#
+# Includes Docker-in-Docker support: each worker runs its own isolated
+# Docker daemon and can spin up its own docker compose stacks.
+#
+# Services:
+#   orchestrator - Manages worker lifecycle, dispatches workflows (DooD + DinD)
+#   worker       - Headless Claude Code agents with isolated Docker (scaled via WORKER_COUNT)
+#   redis        - Inter-service communication and state
+#
+# Usage:
+#   Open in VS Code with Dev Containers extension, or:
+#   docker compose up -d
+
+services:
+  # Orchestrator: manages workers and dispatches workflows
+  # This is the container VS Code connects to via dev containers
+  # Has both DooD (manage workers on host) and DinD (run app services in isolation)
+  orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: /usr/local/bin/entrypoint-orchestrator.sh
+    user: node
+    privileged: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    volumes:
+      # Clone mode: persistent volume avoids host mount issues (especially on Windows)
+      - workspace:/workspaces
+      # Shared Claude config (API keys, settings, extensions - survives rebuilds)
+      - claude-config:/home/node/.claude
+      - ${HOME}/.claude.json:/home/node/.claude.json:ro
+      # Host Docker socket for managing worker containers (Docker-outside-of-Docker)
+      # DinD runs on /var/run/docker.sock, host socket at separate path
+      - /var/run/docker.sock:/var/run/docker-host.sock
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - REPO_URL=${REPO_URL}
+      - REPO_BRANCH=${REPO_BRANCH:-main}
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - ORCHESTRATOR_PORT=${ORCHESTRATOR_PORT:-3100}
+      # Enable Docker-in-Docker (entrypoint starts dockerd)
+      - ENABLE_DIND=true
+      # Default to host Docker context (for managing workers via DooD)
+      - DOCKER_CONTEXT=host
+    ports:
+      - "${ORCHESTRATOR_PORT:-3100}:${ORCHESTRATOR_PORT:-3100}"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${ORCHESTRATOR_PORT:-3100}/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - cluster-network
+    depends_on:
+      redis:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Workers: headless Claude Code agents with isolated Docker
+  # Each worker has its own Docker daemon for running application containers
+  # Scale with WORKER_COUNT env var (default: 3)
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: /usr/local/bin/entrypoint-worker.sh
+    user: node
+    privileged: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    deploy:
+      replicas: ${WORKER_COUNT:-3}
+    volumes:
+      # Shared Claude config (same API keys as orchestrator)
+      - claude-config:/home/node/.claude
+      - ${HOME}/.claude.json:/home/node/.claude.json:ro
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - REPO_URL=${REPO_URL}
+      - REPO_BRANCH=${REPO_BRANCH:-main}
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - ORCHESTRATOR_URL=http://orchestrator:${ORCHESTRATOR_PORT:-3100}
+      - HEALTH_PORT=9001
+      # Enable Docker-in-Docker for workers
+      - ENABLE_DIND=true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    networks:
+      - cluster-network
+    depends_on:
+      redis:
+        condition: service_healthy
+      orchestrator:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Redis: inter-service communication and state
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    networks:
+      - cluster-network
+
+volumes:
+  # Persistent workspace volume (repos cloned here, not mounted from host)
+  workspace:
+  # Shared Claude config across orchestrator and workers
+  claude-config:
+  # Redis persistence
+  redis-data:
+
+networks:
+  # Isolated cluster network
+  cluster-network:
+    driver: bridge
