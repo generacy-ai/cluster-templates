@@ -67,13 +67,13 @@
 **File**: `standard/.devcontainer/docker-compose.yml`
 - Run with stub env vars: `REPO_URL=https://github.com/example/repo REPO_BRANCH=main docker compose -f standard/.devcontainer/docker-compose.yml config`
 - Confirm it outputs the resolved config without errors
-- Verify `${HOME}/.claude.json` bind mount doesn't cause config validation failure
+- Verify `~/.claude.json` bind mount doesn't cause config validation failure
 
 ### T007 [DONE] [P] [US2] Validate Docker Compose config locally (microservices)
 **File**: `microservices/.devcontainer/docker-compose.yml`
 - Run with stub env vars: `REPO_URL=https://github.com/example/repo REPO_BRANCH=main docker compose -f microservices/.devcontainer/docker-compose.yml config`
 - Confirm it outputs the resolved config without errors
-- Verify `${HOME}/.claude.json` bind mount doesn't cause config validation failure
+- Verify `~/.claude.json` bind mount doesn't cause config validation failure
 
 ---
 

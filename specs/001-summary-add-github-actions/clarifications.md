@@ -46,7 +46,7 @@
 **Answer**: A) Skip devcontainer.json validation. Only Dockerfiles and Compose files will be validated, keeping scope minimal.
 
 ### Q6: Compose Bind Mount Host Files
-**Context**: Both `docker-compose.yml` files bind-mount `${HOME}/.claude.json:/home/node/.claude.json:ro`. While `docker compose config` validates YAML structure and variable substitution (not file existence), the behavior around missing bind mount source files could vary across Docker Compose versions. Creating a dummy file in CI would make validation more robust.
+**Context**: Both `docker-compose.yml` files bind-mount `~/.claude.json:/home/node/.claude.json:ro`. While `docker compose config` validates YAML structure and variable substitution (not file existence), the behavior around missing bind mount source files could vary across Docker Compose versions. Creating a dummy file in CI would make validation more robust.
 **Question**: Should the workflow create dummy/empty files for bind-mounted host paths (like `~/.claude.json`) before running `docker compose config`, or rely on the current behavior where config validation ignores file existence?
 **Options**:
 - A) No dummy files: Trust that `docker compose config` only validates structure. Simpler, but could break if compose behavior changes.

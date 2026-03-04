@@ -30,7 +30,7 @@ services:
       - workspace:/workspaces
       # Shared Claude config (API keys, settings, extensions - survives rebuilds)
       - claude-config:/home/node/.claude
-      - ${HOME}/.claude.json:/home/node/.claude.json:ro
+      - ~/.claude.json:/home/node/.claude.json:ro
       # Host Docker socket for managing worker containers (Docker-outside-of-Docker)
       # DinD runs on /var/run/docker.sock, host socket at separate path
       - /var/run/docker.sock:/var/run/docker-host.sock
@@ -47,8 +47,6 @@ services:
       - ENABLE_DIND=true
       # Default to host Docker context (for managing workers via DooD)
       - DOCKER_CONTEXT=host
-    ports:
-      - "${ORCHESTRATOR_PORT:-3100}:${ORCHESTRATOR_PORT:-3100}"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${ORCHESTRATOR_PORT:-3100}/api/health"]
       interval: 30s
@@ -80,7 +78,7 @@ services:
     volumes:
       # Shared Claude config (same API keys as orchestrator)
       - claude-config:/home/node/.claude
-      - ${HOME}/.claude.json:/home/node/.claude.json:ro
+      - ~/.claude.json:/home/node/.claude.json:ro
     env_file:
       - path: .env
         required: false

@@ -85,7 +85,7 @@ jobs:
    - `ORCHESTRATOR_PORT`, `WORKER_COUNT` — have `:-default` syntax in compose, no stub needed.
    - The `.env` file referenced via `env_file` has `required: false`, so its absence won't cause errors.
 
-4. **No dummy files**: Per clarification Q6, `docker compose config` validates structure only; the `${HOME}/.claude.json` bind mount source doesn't need to exist.
+4. **No dummy files**: Per clarification Q6, `docker compose config` validates structure only; the `~/.claude.json` bind mount source doesn't need to exist.
 
 5. **No devcontainer.json validation**: Per clarification Q5, scope is limited to Dockerfiles and Compose files.
 

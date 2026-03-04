@@ -25,7 +25,7 @@ services:
       - workspace:/workspaces
       # Shared Claude config (API keys, settings, extensions - survives rebuilds)
       - claude-config:/home/node/.claude
-      - ${HOME}/.claude.json:/home/node/.claude.json:ro
+      - ~/.claude.json:/home/node/.claude.json:ro
       # Host Docker socket for managing worker containers (Docker-outside-of-Docker)
       - /var/run/docker.sock:/var/run/docker-host.sock
     env_file:
@@ -37,8 +37,6 @@ services:
       - REDIS_URL=redis://redis:6379
       - REDIS_HOST=redis
       - ORCHESTRATOR_PORT=${ORCHESTRATOR_PORT:-3100}
-    ports:
-      - "${ORCHESTRATOR_PORT:-3100}:${ORCHESTRATOR_PORT:-3100}"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${ORCHESTRATOR_PORT:-3100}/api/health"]
       interval: 30s
@@ -68,7 +66,7 @@ services:
     volumes:
       # Shared Claude config (same API keys as orchestrator)
       - claude-config:/home/node/.claude
-      - ${HOME}/.claude.json:/home/node/.claude.json:ro
+      - ~/.claude.json:/home/node/.claude.json:ro
     env_file:
       - path: .env
         required: false

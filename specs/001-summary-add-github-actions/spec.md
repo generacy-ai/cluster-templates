@@ -53,7 +53,7 @@ Add a GitHub Actions workflow that validates both cluster template variants (`st
 | FR-005 | Build `microservices/.devcontainer/Dockerfile` using `docker build` | P1 | Build context: `microservices/.devcontainer/` |
 | FR-006 | Validate `standard/.devcontainer/docker-compose.yml` with `docker compose config` | P1 | Must handle env var substitution (see FR-008) |
 | FR-007 | Validate `microservices/.devcontainer/docker-compose.yml` with `docker compose config` | P1 | Must handle env var substitution (see FR-008) |
-| FR-008 | Provide stub environment variables for compose validation | P1 | Compose files reference `${HOME}`, `${REPO_URL}`, `${REPO_BRANCH}`, etc. Set dummy values so `docker compose config` doesn't fail on unset vars |
+| FR-008 | Provide stub environment variables for compose validation | P1 | Compose files reference `~`, `${REPO_URL}`, `${REPO_BRANCH}`, etc. Set dummy values so `docker compose config` doesn't fail on unset vars |
 | FR-009 | Use a matrix strategy to run both variants in parallel | P2 | Matrix over `[standard, microservices]` for clarity and parallelism |
 | FR-010 | Use `docker build` without `--push` (build-only, no registry) | P1 | CI only validates buildability; no images are published |
 | FR-011 | Do not start or run containers | P1 | Build validation only; no `docker compose up` |
@@ -73,10 +73,10 @@ strategy:
 ### Environment Variable Handling
 
 Both `docker-compose.yml` files reference environment variables that won't be set in CI:
-- `${HOME}` — available by default on GitHub runners
+- `~` — available by default on GitHub runners
 - `${REPO_URL}`, `${REPO_BRANCH}` — have defaults in compose or need stubs
 - `${ORCHESTRATOR_PORT}`, `${WORKER_COUNT}` — have defaults via `${VAR:-default}` syntax
-- `${HOME}/.claude.json` — referenced as a bind mount; needs a dummy file or path for config validation
+- `~/.claude.json` — referenced as a bind mount; needs a dummy file or path for config validation
 
 For `docker compose config`, set minimal stub env vars:
 ```yaml
