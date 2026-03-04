@@ -45,7 +45,7 @@ RUN usermod -aG docker node \
 FROM docker AS tooling
 
 # Install Generacy CLI and Agency MCP server from published packages
-RUN npm install -g @generacy-ai/generacy @generacy-ai/agency
+RUN npm install -g @generacy-ai/generacy@preview @generacy-ai/agency@preview
 
 # Install Claude Code
 USER node
