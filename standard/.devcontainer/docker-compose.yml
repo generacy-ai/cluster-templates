@@ -38,7 +38,7 @@ services:
       - REDIS_HOST=redis
       - ORCHESTRATOR_PORT=${ORCHESTRATOR_PORT:-3100}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${ORCHESTRATOR_PORT:-3100}/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:${ORCHESTRATOR_PORT:-3100}/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -75,7 +75,6 @@ services:
       - REPO_BRANCH=${REPO_BRANCH:-main}
       - REDIS_URL=redis://redis:6379
       - REDIS_HOST=redis
-      - ORCHESTRATOR_URL=http://orchestrator:${ORCHESTRATOR_PORT:-3100}
       - HEALTH_PORT=9001
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9001/health"]

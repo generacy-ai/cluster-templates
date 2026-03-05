@@ -34,8 +34,7 @@ fi
 
 # Start worker as PID 1
 log "Starting worker ${AGENT_ID}..."
-exec generacy worker \
-    --worker-id "${AGENT_ID}" \
-    --url "${ORCHESTRATOR_URL:-http://orchestrator:3100}" \
-    --workdir "${WORKDIR:-/workspaces/project}" \
-    --health-port "${HEALTH_PORT:-9001}"
+exec generacy orchestrator \
+    --port "${HEALTH_PORT:-9001}" \
+    --redis-url "redis://${REDIS_HOST:-redis}:${REDIS_PORT:-6379}" \
+    --worker-only
