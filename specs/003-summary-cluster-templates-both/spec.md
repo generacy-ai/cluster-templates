@@ -1,8 +1,10 @@
-# Feature Specification: Update worker entrypoints and orchestrator healthcheck for Fastify orchestrator
+# Feature Specification: ## Summary
 
-The cluster-templates (both `standard/` and `microservices/` variants) need to be updated to align with the current generacy orchestrator architecture.
+The cluster-templates (both `standard/` and `microservices/` variants) need to be updated to align with the current generacy orchestrator architecture
 
-**Branch**: `003-summary-cluster-templates-both` | **Date**: 2026-03-05 | **Status**: Draft | **Issue**: [#3](https://github.com/generacy-ai/cluster-templates/issues/3)
+**Branch**: `003-summary-cluster-templates-both` | **Date**: 2026-03-05 | **Status**: Draft
+
+## Summary
 
 ## Summary
 
@@ -69,56 +71,35 @@ This needs either:
 
 ## User Stories
 
-### US1: External developer onboarding with working cluster
+### US1: [Primary User Story]
 
-**As an** external developer onboarding to Generacy,
-**I want** the cluster templates to start correctly with healthy orchestrator and workers,
-**So that** I can begin development without debugging infrastructure issues.
-
-**Acceptance Criteria**:
-- [ ] Worker containers start and poll Redis for jobs using `generacy orchestrator --worker-only`
-- [ ] Orchestrator container healthcheck passes (Docker reports "healthy")
-- [ ] End-to-end job processing works: label an issue → job queued → worker picks it up
-
-### US2: Cluster operator scaling workers
-
-**As a** cluster operator,
-**I want** each worker container to process one job at a time with scaling via replicas,
-**So that** I can scale the cluster predictably by adjusting container count.
+**As a** [user type],
+**I want** [capability],
+**So that** [benefit].
 
 **Acceptance Criteria**:
-- [ ] Workers no longer accept `--worker-id` or `--url` flags (deprecated CLI removed)
-- [ ] Workers connect directly to Redis, not to the orchestrator HTTP API
-- [ ] Multiple worker replicas can run simultaneously without conflict
+- [ ] [Criterion 1]
+- [ ] [Criterion 2]
 
 ## Functional Requirements
 
 | ID | Requirement | Priority | Notes |
 |----|-------------|----------|-------|
-| FR-001 | Replace `generacy worker` command with `generacy orchestrator --worker-only` in both variant entrypoints | P0 | Deprecated CLI, workers are currently broken |
-| FR-002 | Update worker entrypoint flags: `--port`, `--redis-url`, `--worker-only` | P0 | Reference: tetrad-development entrypoint |
-| FR-003 | Fix orchestrator healthcheck endpoint to use an unauthenticated path | P0 | `/api/health` requires auth, causes perpetual "unhealthy" |
-| FR-004 | Ensure both `standard/` and `microservices/` variants receive identical fixes | P1 | Consistency across templates |
+| FR-001 | [Description] | P1 | |
 
 ## Success Criteria
 
 | ID | Metric | Target | Measurement |
 |----|--------|--------|-------------|
-| SC-001 | Orchestrator health status | "healthy" in `docker ps` | Deploy cluster, check container status |
-| SC-002 | Worker job processing | Jobs picked up from Redis | Label an issue, verify worker processes it |
-| SC-003 | Both variants working | 2/2 templates functional | Deploy each variant and run test plan |
+| SC-001 | [Metric] | [Target] | [How to measure] |
 
 ## Assumptions
 
-- The `generacy orchestrator --worker-only` command is available in the generacy CLI version used by these templates
-- Redis is available at `redis://redis:6379` as configured in the docker-compose files
-- The orchestrator Fastify server exposes an unauthenticated health endpoint (or one can be added outside `/api` prefix)
+- [Assumption 1]
 
 ## Out of Scope
 
-- Changes to the generacy CLI itself (this only updates the templates)
-- Adding new services or capabilities to the cluster templates
-- Modifying the `maxConcurrentWorkers` config (already removed upstream)
+- [Exclusion 1]
 
 ---
 
