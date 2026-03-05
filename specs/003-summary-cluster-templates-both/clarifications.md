@@ -13,7 +13,7 @@ Questions and answers to clarify the feature specification.
 - C: TCP check — use `curl -f http://localhost:PORT/` or a simple port check instead of an HTTP health endpoint
 - D: Other — a different endpoint or approach is needed
 
-**Answer**: *Pending*
+**Answer**: A — `/health` is the correct unauthenticated endpoint. The reference implementation in tetrad-development uses `http://localhost:3100/health` for the orchestrator healthcheck.
 
 ### Q2: Docker-compose env var cleanup
 **Context**: The current worker service in docker-compose likely sets environment variables like `ORCHESTRATOR_URL` and `WORKDIR` that are no longer needed by the new `generacy orchestrator --worker-only` command. Leaving stale env vars is confusing for operators; removing them could break other scripts.
@@ -23,5 +23,4 @@ Questions and answers to clarify the feature specification.
 - B: Keep all existing env vars and just add any new ones needed
 - C: Only change the entrypoint scripts; don't touch docker-compose env vars at all
 
-**Answer**: *Pending*
-
+**Answer**: A — Remove stale env vars and add the new ones. The reference worker service in tetrad-development uses `REDIS_URL`, `REDIS_HOST`, and `HEALTH_PORT` with no `ORCHESTRATOR_URL` or `WORKDIR`.
