@@ -10,23 +10,23 @@
 
 ## Phase 1: Shared Setup Script
 
-- [ ] T001 [US1] Create `standard/.devcontainer/scripts/setup-speckit.sh` — new shared script that: (a) checks if `/workspaces/agency` exists, clones with retry if missing, (b) runs `npm install && npm run build` in agency if needed, (c) re-runs `generacy setup build` to trigger Phase 4, (d) provides `--verify` mode that checks `~/.claude/commands/specify.md` exists and `~/.claude/settings.json` contains agency MCP entry
-- [ ] T002 [P] [US1] Copy `setup-speckit.sh` to `microservices/.devcontainer/scripts/setup-speckit.sh` (identical copy)
+- [X] T001 [US1] Create `standard/.devcontainer/scripts/setup-speckit.sh` — new shared script that: (a) checks if `/workspaces/agency` exists, clones with retry if missing, (b) runs `npm install && npm run build` in agency if needed, (c) re-runs `generacy setup build` to trigger Phase 4, (d) provides `--verify` mode that checks `~/.claude/commands/specify.md` exists and `~/.claude/settings.json` contains agency MCP entry
+- [X] T002 [P] [US1] Copy `setup-speckit.sh` to `microservices/.devcontainer/scripts/setup-speckit.sh` (identical copy)
 
 ## Phase 2: Error Handling & Pre-flight Checks
 
-- [ ] T003 [US2] Update `standard/.devcontainer/scripts/entrypoint-worker.sh` — replace `2>/dev/null || true` on all three generacy setup commands with selective error handling: auth logs warning, workspace logs warning, build triggers `setup-speckit.sh` recovery on failure; log errors to `/tmp/generacy-setup.log`
-- [ ] T004 [P] [US2] Update `standard/.devcontainer/scripts/entrypoint-orchestrator.sh` — same error handling replacement as T003
-- [ ] T005 [P] [US2] Update `microservices/.devcontainer/scripts/entrypoint-worker.sh` — same error handling replacement as T003
-- [ ] T006 [P] [US2] Update `microservices/.devcontainer/scripts/entrypoint-orchestrator.sh` — same error handling replacement as T004
-- [ ] T007 [US3] Add pre-flight check to `standard/.devcontainer/scripts/entrypoint-worker.sh` — after setup, run `setup-speckit.sh --verify`; exit 1 with FATAL message if speckit not ready
-- [ ] T008 [P] [US3] Add pre-flight check to `microservices/.devcontainer/scripts/entrypoint-worker.sh` — same as T007
-- [ ] T009 [US3] Add light pre-flight warning to `standard/.devcontainer/scripts/entrypoint-orchestrator.sh` — warn if speckit missing but don't block startup
-- [ ] T010 [P] [US3] Add light pre-flight warning to `microservices/.devcontainer/scripts/entrypoint-orchestrator.sh` — same as T009
+- [X] T003 [US2] Update `standard/.devcontainer/scripts/entrypoint-worker.sh` — replace `2>/dev/null || true` on all three generacy setup commands with selective error handling: auth logs warning, workspace logs warning, build triggers `setup-speckit.sh` recovery on failure; log errors to `/tmp/generacy-setup.log`
+- [X] T004 [P] [US2] Update `standard/.devcontainer/scripts/entrypoint-orchestrator.sh` — same error handling replacement as T003
+- [X] T005 [P] [US2] Update `microservices/.devcontainer/scripts/entrypoint-worker.sh` — same error handling replacement as T003
+- [X] T006 [P] [US2] Update `microservices/.devcontainer/scripts/entrypoint-orchestrator.sh` — same error handling replacement as T004
+- [X] T007 [US3] Add pre-flight check to `standard/.devcontainer/scripts/entrypoint-worker.sh` — after setup, run `setup-speckit.sh --verify`; exit 1 with FATAL message if speckit not ready
+- [X] T008 [P] [US3] Add pre-flight check to `microservices/.devcontainer/scripts/entrypoint-worker.sh` — same as T007
+- [X] T009 [US3] Add light pre-flight warning to `standard/.devcontainer/scripts/entrypoint-orchestrator.sh` — warn if speckit missing but don't block startup
+- [X] T010 [P] [US3] Add light pre-flight warning to `microservices/.devcontainer/scripts/entrypoint-orchestrator.sh` — same as T009
 
 ## Phase 3: Validation
 
-- [ ] T011 Build validation — run `docker build -f standard/.devcontainer/Dockerfile standard/.devcontainer/` and `docker build -f microservices/.devcontainer/Dockerfile microservices/.devcontainer/` to verify Dockerfiles still build
+- [X] T011 Build validation — run `docker build -f standard/.devcontainer/Dockerfile standard/.devcontainer/` and `docker build -f microservices/.devcontainer/Dockerfile microservices/.devcontainer/` to verify Dockerfiles still build
 
 ## Dependencies & Execution Order
 

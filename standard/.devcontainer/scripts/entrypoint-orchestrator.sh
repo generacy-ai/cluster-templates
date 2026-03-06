@@ -24,10 +24,27 @@ fi
 
 # Run generacy setup if CLI is available
 if command -v generacy >/dev/null 2>&1; then
+    SETUP_LOG="/tmp/generacy-setup.log"
     log "Running generacy setup..."
-    generacy setup auth 2>/dev/null || true
-    generacy setup workspace --clean 2>/dev/null || true
-    generacy setup build 2>/dev/null || true
+
+    # Non-critical: log errors but continue
+    generacy setup auth 2>>"$SETUP_LOG" || log "WARNING: 'generacy setup auth' failed (see $SETUP_LOG)"
+
+    # Important: log errors but continue (workspace needed for build)
+    generacy setup workspace --clean 2>>"$SETUP_LOG" || log "WARNING: 'generacy setup workspace' failed (see $SETUP_LOG)"
+
+    # Critical: trigger speckit recovery on failure
+    generacy setup build 2>>"$SETUP_LOG" || {
+        log "ERROR: 'generacy setup build' failed — attempting speckit recovery (see $SETUP_LOG)"
+        bash /usr/local/bin/setup-speckit.sh 2>>"$SETUP_LOG" || log "ERROR: speckit recovery also failed (see $SETUP_LOG)"
+    }
+fi
+
+# Light check: warn if speckit is missing (orchestrator can still run)
+if [ -x "/usr/local/bin/setup-speckit.sh" ]; then
+    if ! bash /usr/local/bin/setup-speckit.sh --verify 2>/dev/null; then
+        log "WARNING: Speckit commands not available. Workers may fail to process phases."
+    fi
 fi
 
 # Wait for Redis to be ready
