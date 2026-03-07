@@ -1,9 +1,9 @@
 {
-  "name": "Generacy Development Cluster (Microservices)",
+  "name": "{{PROJECT_NAME}}",
   "dockerComposeFile": "docker-compose.yml",
   "service": "orchestrator",
   "runServices": ["orchestrator", "redis"],
-  "workspaceFolder": "/workspaces",
+  "workspaceFolder": "/workspaces/{{REPO_NAME}}",
   "shutdownAction": "none",
   "overrideCommand": false,
 

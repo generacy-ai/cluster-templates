@@ -9,6 +9,8 @@
 #   Open in VS Code with Dev Containers extension, or:
 #   docker compose up -d
 
+name: "{{PROJECT_NAME}}"
+
 services:
   # Orchestrator: manages workers and dispatches workflows
   # This is the container VS Code connects to via dev containers
@@ -30,6 +32,7 @@ services:
       - /var/run/docker.sock:/var/run/docker-host.sock
     env_file:
       - path: .env
+      - path: .env.local
         required: false
     environment:
       - REPO_URL=${REPO_URL}
@@ -69,6 +72,7 @@ services:
       - ~/.claude.json:/home/node/.claude.json
     env_file:
       - path: .env
+      - path: .env.local
         required: false
     environment:
       - REPO_URL=${REPO_URL}
