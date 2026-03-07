@@ -50,6 +50,7 @@ services:
       - ENABLE_DIND=true
       # Default to host Docker context (for managing workers via DooD)
       - DOCKER_CONTEXT=host
+      - WORKSPACE_DIR=${WORKSPACE_DIR:-}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${ORCHESTRATOR_PORT:-3100}/health"]
       interval: 30s
@@ -94,6 +95,7 @@ services:
       - HEALTH_PORT=9001
       # Enable Docker-in-Docker for workers
       - ENABLE_DIND=true
+      - WORKSPACE_DIR=${WORKSPACE_DIR:-}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9001/health"]
       interval: 30s
