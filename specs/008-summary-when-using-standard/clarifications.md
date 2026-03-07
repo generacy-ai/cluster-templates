@@ -11,7 +11,7 @@ Questions and answers to clarify the feature specification.
 - A: Apply to both standard and microservices variants
 - B: Standard only — microservices will be handled separately
 
-**Answer**: *Pending*
+**Answer**: A
 
 ### Q2: Multiple repos in /workspaces
 **Context**: The devcontainer detection uses `find /workspaces -maxdepth 2 -name .git` to locate an existing repo. In a multi-repo workspace (e.g., after generacy setup workspace clones additional repos), this could match the wrong repo.
@@ -20,7 +20,7 @@ Questions and answers to clarify the feature specification.
 - A: Match by REPO_URL basename — look for /workspaces/<derived-name>/.git specifically
 - B: Use first found (head -1) — in practice there's only one repo at entrypoint time
 
-**Answer**: *Pending*
+**Answer**: A
 
 ### Q3: Backwards compatibility for /workspaces/project
 **Context**: Existing users may have scripts, CI configs, or documentation referencing `/workspaces/project`. Changing the clone path could break these references silently.
@@ -29,5 +29,5 @@ Questions and answers to clarify the feature specification.
 - A: No external dependencies — safe to change the path
 - B: There are external references that need a migration path (e.g., symlink from /workspaces/project)
 
-**Answer**: *Pending*
+**Answer**: A
 

@@ -20,12 +20,12 @@ Modify both entrypoint scripts (orchestrator and worker) to:
 - **Dependencies**: git, generacy CLI, nc (netcat)
 - **Variants**: Standard and Microservices (pending clarification Q1 — plan covers both assuming "apply to both")
 
-## Pending Clarifications
+## Clarifications (Resolved)
 
-Three clarifications (Q1–Q3 in `clarifications.md`) are still pending. The plan proceeds with these assumptions:
-- **Q1 (Microservices scope)**: Assume both variants — changes are identical except microservices adds `setup-docker-dind.sh`
-- **Q2 (Multiple repos detection)**: Assume match by `REPO_URL` basename — more reliable than `head -1`
-- **Q3 (Backwards compat)**: Assume no external dependencies on `/workspaces/project` — safe to change
+All three clarifications (Q1–Q3 in `clarifications.md`) have been answered:
+- **Q1 (Microservices scope)**: Apply to both variants (Answer: A)
+- **Q2 (Multiple repos detection)**: Match by `REPO_URL` basename (Answer: A)
+- **Q3 (Backwards compat)**: No external dependencies on `/workspaces/project` — safe to change (Answer: A)
 
 ## Project Structure
 
@@ -148,7 +148,7 @@ docker build -f microservices/.devcontainer/Dockerfile microservices/.devcontain
 |------|--------|------------|
 | `DEVCONTAINER` env var not set by extension | Devcontainer detection fails, clone proceeds normally | Fallback is the current behavior — no regression |
 | `REPO_URL` basename doesn't match devcontainer clone path | Clone skipping fails, duplicate clone occurs | Match logic uses same derivation as standalone mode |
-| Existing setups reference `/workspaces/project` | Broken paths | Pending clarification Q3; `WORKSPACE_DIR` override available as escape hatch |
+| Existing setups reference `/workspaces/project` | Broken paths | Confirmed no external dependencies (Q3); `WORKSPACE_DIR` override available as escape hatch |
 
 ## Files Changed Summary
 
