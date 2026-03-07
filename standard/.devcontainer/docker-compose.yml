@@ -40,6 +40,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - REDIS_HOST=redis
       - ORCHESTRATOR_PORT=${ORCHESTRATOR_PORT:-3100}
+      - WORKSPACE_DIR=${WORKSPACE_DIR:-}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${ORCHESTRATOR_PORT:-3100}/health"]
       interval: 30s
@@ -80,6 +81,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - REDIS_HOST=redis
       - HEALTH_PORT=9001
+      - WORKSPACE_DIR=${WORKSPACE_DIR:-}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9001/health"]
       interval: 30s

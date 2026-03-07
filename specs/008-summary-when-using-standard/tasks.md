@@ -10,28 +10,28 @@
 
 ## Phase 1: Setup — Shared Helper
 
-- [ ] T001 [US1] Create `standard/.devcontainer/scripts/resolve-workspace.sh` — shared helper that derives `WORKSPACE_DIR` from `REPO_URL`, detects devcontainer mode via `DEVCONTAINER`/`REMOTE_CONTAINERS` env vars, skips clone when repo exists, and exports `WORKSPACE_DIR`
-- [ ] T002 [P] [US1] Copy `resolve-workspace.sh` to `microservices/.devcontainer/scripts/resolve-workspace.sh` (identical file)
+- [X] T001 [US1] Create `standard/.devcontainer/scripts/resolve-workspace.sh` — shared helper that derives `WORKSPACE_DIR` from `REPO_URL`, detects devcontainer mode via `DEVCONTAINER`/`REMOTE_CONTAINERS` env vars, skips clone when repo exists, and exports `WORKSPACE_DIR`
+- [X] T002 [P] [US1] Copy `resolve-workspace.sh` to `microservices/.devcontainer/scripts/resolve-workspace.sh` (identical file)
 
 ## Phase 2: Update Entrypoint Scripts
 
-- [ ] T003 [US1] [US2] Update `standard/.devcontainer/scripts/entrypoint-orchestrator.sh` — replace inline clone block (lines ~14-23) with `source /usr/local/bin/resolve-workspace.sh`, update `generacy setup workspace` call to pass `--config "${WORKSPACE_DIR}/.generacy/config.yaml"` when the file exists
-- [ ] T004 [P] [US1] [US2] Update `standard/.devcontainer/scripts/entrypoint-worker.sh` — same changes as T003
-- [ ] T005 [P] [US1] [US2] Update `microservices/.devcontainer/scripts/entrypoint-orchestrator.sh` — same changes as T003
-- [ ] T006 [P] [US1] [US2] Update `microservices/.devcontainer/scripts/entrypoint-worker.sh` — same changes as T003
+- [X] T003 [US1] [US2] Update `standard/.devcontainer/scripts/entrypoint-orchestrator.sh` — replace inline clone block (lines ~14-23) with `source /usr/local/bin/resolve-workspace.sh`, update `generacy setup workspace` call to pass `--config "${WORKSPACE_DIR}/.generacy/config.yaml"` when the file exists
+- [X] T004 [P] [US1] [US2] Update `standard/.devcontainer/scripts/entrypoint-worker.sh` — same changes as T003
+- [X] T005 [P] [US1] [US2] Update `microservices/.devcontainer/scripts/entrypoint-orchestrator.sh` — same changes as T003
+- [X] T006 [P] [US1] [US2] Update `microservices/.devcontainer/scripts/entrypoint-worker.sh` — same changes as T003
 
 ## Phase 3: Infrastructure — Dockerfile, Compose, Env
 
-- [ ] T007 [US2] Update `standard/.devcontainer/Dockerfile` — add `COPY scripts/resolve-workspace.sh /usr/local/bin/resolve-workspace.sh` and `RUN chmod +x /usr/local/bin/resolve-workspace.sh` alongside existing entrypoint copies
-- [ ] T008 [P] [US2] Update `microservices/.devcontainer/Dockerfile` — same COPY + chmod for resolve-workspace.sh
-- [ ] T009 [P] [US2] Update `standard/.devcontainer/docker-compose.yml` — add `WORKSPACE_DIR=${WORKSPACE_DIR:-}` to environment for orchestrator and worker services
-- [ ] T010 [P] [US2] Update `microservices/.devcontainer/docker-compose.yml` — same WORKSPACE_DIR addition
-- [ ] T011 [P] [US2] Create `standard/.devcontainer/.env.template` with documented `WORKSPACE_DIR` variable
-- [ ] T012 [P] [US2] Create `microservices/.devcontainer/.env.template` with documented `WORKSPACE_DIR` variable
+- [X] T007 [US2] Update `standard/.devcontainer/Dockerfile` — add `COPY scripts/resolve-workspace.sh /usr/local/bin/resolve-workspace.sh` and `RUN chmod +x /usr/local/bin/resolve-workspace.sh` alongside existing entrypoint copies
+- [X] T008 [P] [US2] Update `microservices/.devcontainer/Dockerfile` — same COPY + chmod for resolve-workspace.sh
+- [X] T009 [P] [US2] Update `standard/.devcontainer/docker-compose.yml` — add `WORKSPACE_DIR=${WORKSPACE_DIR:-}` to environment for orchestrator and worker services
+- [X] T010 [P] [US2] Update `microservices/.devcontainer/docker-compose.yml` — same WORKSPACE_DIR addition
+- [X] T011 [P] [US2] Create `standard/.devcontainer/.env.template` with documented `WORKSPACE_DIR` variable
+- [X] T012 [P] [US2] Create `microservices/.devcontainer/.env.template` with documented `WORKSPACE_DIR` variable
 
 ## Phase 4: Validation
 
-- [ ] T013 Validate Docker builds: `docker build -f standard/.devcontainer/Dockerfile standard/.devcontainer/` and `docker build -f microservices/.devcontainer/Dockerfile microservices/.devcontainer/`
+- [X] T013 Validate Docker builds: `docker build -f standard/.devcontainer/Dockerfile standard/.devcontainer/` and `docker build -f microservices/.devcontainer/Dockerfile microservices/.devcontainer/`
 
 ## Dependencies & Execution Order
 
