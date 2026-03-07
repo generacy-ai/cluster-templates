@@ -13,16 +13,8 @@ log "Starting worker setup..."
 # Configure git credentials
 bash /usr/local/bin/setup-credentials.sh
 
-# Clone project repo if workspace is fresh
-if [ -n "${REPO_URL:-}" ] && [ ! -d "/workspaces/project/.git" ]; then
-    log "Cloning project repo: ${REPO_URL} (branch: ${REPO_BRANCH:-main})"
-    git clone --branch "${REPO_BRANCH:-main}" "${REPO_URL}" /workspaces/project
-elif [ -d "/workspaces/project/.git" ]; then
-    log "Project repo already cloned, pulling latest..."
-    cd /workspaces/project
-    git fetch origin
-    git pull --ff-only origin "${REPO_BRANCH:-main}" 2>/dev/null || true
-fi
+# Resolve workspace directory (handles devcontainer detection + clone)
+source /usr/local/bin/resolve-workspace.sh
 
 # Run generacy setup if CLI is available
 if command -v generacy >/dev/null 2>&1; then
@@ -33,7 +25,13 @@ if command -v generacy >/dev/null 2>&1; then
     generacy setup auth 2>>"$SETUP_LOG" || log "WARNING: 'generacy setup auth' failed (see $SETUP_LOG)"
 
     # Important: log errors but continue (workspace needed for build)
-    generacy setup workspace --clean 2>>"$SETUP_LOG" || log "WARNING: 'generacy setup workspace' failed (see $SETUP_LOG)"
+    # Pass --config when config file exists to avoid ambiguity with multiple repos
+    CONFIG_PATH="${WORKSPACE_DIR}/.generacy/config.yaml"
+    if [ -f "$CONFIG_PATH" ]; then
+        generacy setup workspace --config "$CONFIG_PATH" --clean 2>>"$SETUP_LOG" || log "WARNING: 'generacy setup workspace' failed (see $SETUP_LOG)"
+    else
+        generacy setup workspace --clean 2>>"$SETUP_LOG" || log "WARNING: 'generacy setup workspace' failed (see $SETUP_LOG)"
+    fi
 
     # Critical: trigger speckit recovery on failure
     generacy setup build 2>>"$SETUP_LOG" || {
