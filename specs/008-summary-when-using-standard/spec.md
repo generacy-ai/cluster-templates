@@ -1,136 +1,104 @@
-# Feature Specification: ## Summary
+# Feature Specification: Eliminate Duplicate Repo Clone in Devcontainer Mode
 
-When using the standard template with VS Code Dev Containers, the project repo gets cloned twice — once by the Dev Containers extension (to `/workspaces/<repo-name>`) and again by the entrypoint scripts (to `/workspaces/project`)
-
-**Branch**: `008-summary-when-using-standard` | **Date**: 2026-03-07 | **Status**: Draft
+**Branch**: `008-summary-when-using-standard` | **Date**: 2026-03-07 | **Status**: Draft | **Issue**: [#8](https://github.com/generacy-ai/cluster-templates/issues/8)
 
 ## Summary
 
-## Summary
-
-When using the standard template with VS Code Dev Containers, the project repo gets cloned twice — once by the Dev Containers extension (to `/workspaces/<repo-name>`) and again by the entrypoint scripts (to `/workspaces/project`). This wastes disk space and causes config file conflicts.
+When using the standard template with VS Code Dev Containers, the project repo gets cloned twice — once by the Dev Containers extension (to `/workspaces/<repo-name>`) and again by the entrypoint scripts (to `/workspaces/project`). This wastes disk space and causes config file conflicts that cascade into worker setup failures.
 
 Additionally, after cloning the primary repo, the entrypoint should pass `--config` to `generacy setup workspace` so it can discover the `.generacy/config.yaml` and clone additional repos listed there.
 
 ## Problem
 
-Both `entrypoint-orchestrator.sh` (lines 15-24) and `entrypoint-worker.sh` (lines 17-25) unconditionally clone `REPO_URL` to `/workspaces/project`:
+Both `entrypoint-orchestrator.sh` and `entrypoint-worker.sh` unconditionally clone `REPO_URL` to `/workspaces/project`. When opened via VS Code Dev Containers, the extension has already cloned the repo to `/workspaces/<repo-name>`, resulting in:
 
-```bash
-if [ -n "${REPO_URL:-}" ] && [ ! -d "/workspaces/project/.git" ]; then
-    git clone --branch "${REPO_BRANCH:-main}" "${REPO_URL}" /workspaces/project
-```
+1. **Two copies of the repo** on disk
+2. **Config file conflicts** — `generacy setup workspace` finds multiple `.generacy/config.yaml` files and errors out
+3. **Worker setup failures cascade** — the config conflict causes `generacy setup workspace` to fail, feeding into the worker crash loop
 
-When opened via VS Code Dev Containers, the extension has already cloned the repo to `/workspaces/<repo-name>` (e.g., `/workspaces/markdown-preview-tool`). This results in:
+## User Stories
 
-1. **Two copies of the repo** — `/workspaces/markdown-preview-tool` and `/workspaces/project`
-2. **Config file conflicts** — `generacy setup workspace` finds multiple `.generacy/config.yaml` files:
-   ```
-   ERROR (generacy): Multiple .generacy/config.yaml files found. Use --config or CONFIG_PATH to specify which one.
-     configs: [
-       "/workspaces/markdown-preview-tool/.generacy/config.yaml",
-       "/workspaces/project/.generacy/config.yaml"
-     ]
-   ```
-3. **Worker setup failures cascade** — The config conflict causes `generacy setup workspace` to fail, which feeds into the worker crash loop
+### US1: Devcontainer Developer
 
-## Proposed Solution
+**As a** developer using VS Code Dev Containers,
+**I want** the entrypoint scripts to detect the already-cloned repo and skip redundant cloning,
+**So that** I don't get duplicate repos, config conflicts, or worker crash loops.
 
-### 1. Derive repo name from REPO_URL and clone to `/workspaces/<repo-name>`
+**Acceptance Criteria**:
+- [ ] No duplicate clone when `DEVCONTAINER` or `REMOTE_CONTAINERS` env var is set
+- [ ] Existing repo at `/workspaces/<repo-name>` is reused as `WORKSPACE_DIR`
+- [ ] `generacy setup workspace` runs successfully without config conflicts
 
-Replace hardcoded `/workspaces/project` with a path derived from the repo URL:
+### US2: Docker Compose Developer
 
-```bash
-REPO_NAME=$(basename "${REPO_URL%.git}")
-WORKSPACE_DIR="/workspaces/${REPO_NAME}"
+**As a** developer using the template via standalone Docker Compose (non-devcontainer),
+**I want** the repo to be cloned to `/workspaces/<repo-name>` (derived from URL) instead of hardcoded `/workspaces/project`,
+**So that** the workspace path is predictable and consistent with devcontainer mode.
 
-if [ -n "${REPO_URL:-}" ] && [ ! -d "${WORKSPACE_DIR}/.git" ]; then
-    git clone --branch "${REPO_BRANCH:-main}" "${REPO_URL}" "${WORKSPACE_DIR}"
-fi
-```
+**Acceptance Criteria**:
+- [ ] Clone target derived from `REPO_URL` using `basename`
+- [ ] `WORKSPACE_DIR` env var can override the derived path
+- [ ] Backward-compatible: existing setups continue to work
 
-### 2. Detect devcontainer mode and skip clone
+### US3: Multi-Repo Workspace Setup
 
-When running inside a devcontainer, the repo is already available. Detect this and skip:
+**As a** developer with a `.generacy/config.yaml` that lists additional repos,
+**I want** the entrypoint to pass `--config` to `generacy setup workspace`,
+**So that** additional repos are discovered and cloned automatically.
 
-```bash
-if [ -n "${DEVCONTAINER:-}" ] || [ -n "${REMOTE_CONTAINERS:-}" ]; then
-    EXISTING_REPO=$(find /workspaces -maxdepth 2 -name ".git" -type d 2>/dev/null | head -1)
-    if [ -n "$EXISTING_REPO" ]; then
-        WORKSPACE_DIR="$(dirname "$EXISTING_REPO")"
-        log "Devcontainer mode: using existing repo at $WORKSPACE_DIR"
-    fi
-fi
-```
+**Acceptance Criteria**:
+- [ ] `--config` flag passed when `.generacy/config.yaml` exists in the workspace
+- [ ] Falls back to plain `generacy setup workspace` when no config file exists
 
-### 3. Pass `--config` to `generacy setup workspace`
+## Functional Requirements
 
-After cloning the primary repo, the entrypoint should pass the config path explicitly so `generacy setup workspace` can discover and clone additional repos:
+| ID | Requirement | Priority | Notes |
+|----|-------------|----------|-------|
+| FR-001 | Derive clone path from `REPO_URL` (`basename` without `.git`) | P1 | Replace hardcoded `/workspaces/project` |
+| FR-002 | Detect devcontainer mode via `DEVCONTAINER`/`REMOTE_CONTAINERS` env vars | P1 | Skip clone, reuse existing repo |
+| FR-003 | Support `WORKSPACE_DIR` env var override | P2 | Takes precedence over derived path |
+| FR-004 | Pass `--config` to `generacy setup workspace` when config file exists | P1 | Enables multi-repo discovery |
+| FR-005 | Add `WORKSPACE_DIR` to `.env.template` | P2 | Document the override option |
+| FR-006 | Pass `WORKSPACE_DIR` through `docker-compose.yml` environment | P2 | Make override available in containers |
+| FR-007 | Apply changes to both `standard/` and `microservices/` variants | P1 | Both variants share the same pattern |
 
-```bash
-CONFIG_PATH="${WORKSPACE_DIR}/.generacy/config.yaml"
-if [ -f "$CONFIG_PATH" ]; then
-    generacy setup workspace --config "$CONFIG_PATH"
-else
-    generacy setup workspace
-fi
-```
+## Success Criteria
 
-This is the same pattern needed in generacy-ai/tetrad-development#32.
-
-### 4. Add WORKSPACE_DIR to .env.template
-
-```env
-# Workspace directory override (default: derived from REPO_URL)
-# WORKSPACE_DIR=/workspaces/my-project
-```
+| ID | Metric | Target | Measurement |
+|----|--------|--------|-------------|
+| SC-001 | No duplicate repo in devcontainer mode | 0 duplicates | Open in VS Code Dev Containers, verify single repo |
+| SC-002 | `generacy setup workspace` succeeds | No config conflict error | Check entrypoint logs |
+| SC-003 | Standalone Docker Compose still works | Clone succeeds to derived path | `docker compose up` with `REPO_URL` set |
 
 ## Files Affected
 
-- `.devcontainer/scripts/entrypoint-orchestrator.sh` — derive clone path, add devcontainer detection, pass --config
-- `.devcontainer/scripts/entrypoint-worker.sh` — same changes
-- `.devcontainer/.env.template` — add `WORKSPACE_DIR`
-- `.devcontainer/docker-compose.yml` — pass `WORKSPACE_DIR` to environment
+- `standard/.devcontainer/scripts/entrypoint-orchestrator.sh` — derive clone path, devcontainer detection, pass --config
+- `standard/.devcontainer/scripts/entrypoint-worker.sh` — same changes
+- `standard/.devcontainer/.env.template` — add `WORKSPACE_DIR`
+- `standard/.devcontainer/docker-compose.yml` — pass `WORKSPACE_DIR` to environment
+- `microservices/.devcontainer/scripts/entrypoint-orchestrator.sh` — same changes as standard
+- `microservices/.devcontainer/scripts/entrypoint-worker.sh` — same changes as standard
+- `microservices/.devcontainer/.env.template` — add `WORKSPACE_DIR`
+- `microservices/.devcontainer/docker-compose.yml` — pass `WORKSPACE_DIR` to environment
+
+## Assumptions
+
+- The `DEVCONTAINER` or `REMOTE_CONTAINERS` env var is reliably set by VS Code Dev Containers extension
+- `REPO_URL` always ends in a parseable repo name (with or without `.git` suffix)
+- The entrypoint scripts run as a user with write access to `/workspaces/`
+
+## Out of Scope
+
+- Changing devcontainer.json `workspaceFolder` configuration
+- Modifying the Dockerfile itself
+- Handling repos cloned to non-`/workspaces/` directories
+- Changes to the `generacy` CLI tool itself
 
 ## Related
 
 - generacy-ai/tetrad-development#32 (same pattern: clone primary repo first, pass --config to setup workspace)
 - #9 (worker crash loop — config conflict from duplicate clone compounds it)
 - #7 (template placeholders)
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-## User Stories
-
-### US1: [Primary User Story]
-
-**As a** [user type],
-**I want** [capability],
-**So that** [benefit].
-
-**Acceptance Criteria**:
-- [ ] [Criterion 1]
-- [ ] [Criterion 2]
-
-## Functional Requirements
-
-| ID | Requirement | Priority | Notes |
-|----|-------------|----------|-------|
-| FR-001 | [Description] | P1 | |
-
-## Success Criteria
-
-| ID | Metric | Target | Measurement |
-|----|--------|--------|-------------|
-| SC-001 | [Metric] | [Target] | [How to measure] |
-
-## Assumptions
-
-- [Assumption 1]
-
-## Out of Scope
-
-- [Exclusion 1]
 
 ---
 
