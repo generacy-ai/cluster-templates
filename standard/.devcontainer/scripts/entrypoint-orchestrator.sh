@@ -14,6 +14,45 @@ bash /usr/local/bin/setup-credentials.sh
 # Resolve workspace directory (handles devcontainer detection + clone)
 source /usr/local/bin/resolve-workspace.sh
 
+# Install generacy/agency packages into shared volume
+SHARED_PACKAGES=/shared-packages
+CHANNEL="${GENERACY_CHANNEL:-stable}"
+MARKER_FILE="${SHARED_PACKAGES}/.installed-version"
+
+install_packages() {
+    log "Installing @generacy-ai packages (channel: ${CHANNEL}) into ${SHARED_PACKAGES}..."
+    npm install \
+        --prefix "${SHARED_PACKAGES}" \
+        --no-save \
+        "@generacy-ai/generacy@${CHANNEL}" \
+        "@generacy-ai/agency@${CHANNEL}" \
+        "@generacy-ai/agency-plugin-spec-kit@${CHANNEL}" \
+        2>>"$SETUP_LOG" || { log "ERROR: npm install failed"; exit 1; }
+    # Write marker: channel + installed version of generacy
+    local version
+    version=$(node -e "console.log(require('${SHARED_PACKAGES}/node_modules/@generacy-ai/generacy/package.json').version)" 2>/dev/null || echo "unknown")
+    echo "${CHANNEL}:${version}" > "${MARKER_FILE}"
+    log "Packages installed (version: ${version})"
+}
+
+SETUP_LOG="${SETUP_LOG:-/tmp/generacy-setup.log}"
+if [ "${SKIP_PACKAGE_UPDATE:-false}" = "true" ]; then
+    log "SKIP_PACKAGE_UPDATE=true — skipping npm install"
+elif [ -f "${MARKER_FILE}" ]; then
+    MARKER=$(cat "${MARKER_FILE}")
+    if [ "${MARKER%:*}" = "${CHANNEL}" ]; then
+        log "Packages already installed for channel '${CHANNEL}' (${MARKER#*:}) — skipping"
+    else
+        log "Channel changed from '${MARKER%:*}' to '${CHANNEL}' — reinstalling"
+        install_packages
+    fi
+else
+    install_packages
+fi
+
+# Add shared packages to PATH for this process
+export PATH="${SHARED_PACKAGES}/node_modules/.bin:${PATH}"
+
 # Run generacy setup if CLI is available
 if command -v generacy >/dev/null 2>&1; then
     SETUP_LOG="/tmp/generacy-setup.log"

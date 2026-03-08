@@ -25,9 +25,6 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
 # ── Stage 2: Generacy tooling (changes with npm versions) ────────────────────
 FROM base AS tooling
 
-# Install Generacy CLI and Agency MCP server from published packages
-RUN npm install -g @generacy-ai/generacy@preview @generacy-ai/agency@preview
-
 # Install Claude Code
 USER node
 RUN curl -fsSL https://claude.ai/install.sh | bash

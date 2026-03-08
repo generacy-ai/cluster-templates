@@ -30,6 +30,10 @@ services:
       - ~/.claude.json:/home/node/.claude.json
       # Host Docker socket for managing worker containers (Docker-outside-of-Docker)
       - /var/run/docker.sock:/var/run/docker-host.sock
+      # Shared packages volume (orchestrator installs; workers read)
+      - shared-packages:/shared-packages
+      # npm cache persistence (speeds up repeated installs)
+      - npm-cache:/home/node/.npm
     env_file:
       - path: .env
       - path: .env.local
@@ -41,6 +45,8 @@ services:
       - REDIS_HOST=redis
       - ORCHESTRATOR_PORT=${ORCHESTRATOR_PORT:-3100}
       - WORKSPACE_DIR=${WORKSPACE_DIR:-}
+      - GENERACY_CHANNEL=${GENERACY_CHANNEL:-stable}
+      - SKIP_PACKAGE_UPDATE=${SKIP_PACKAGE_UPDATE:-false}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${ORCHESTRATOR_PORT:-3100}/health"]
       interval: 30s
@@ -71,6 +77,8 @@ services:
       # Shared Claude config (same API keys as orchestrator)
       - claude-config:/home/node/.claude
       - ~/.claude.json:/home/node/.claude.json
+      # Shared packages volume (read-only: workers consume packages installed by orchestrator)
+      - shared-packages:/shared-packages:ro
     env_file:
       - path: .env
       - path: .env.local
@@ -82,6 +90,8 @@ services:
       - REDIS_HOST=redis
       - HEALTH_PORT=9001
       - WORKSPACE_DIR=${WORKSPACE_DIR:-}
+      - GENERACY_CHANNEL=${GENERACY_CHANNEL:-stable}
+      - SKIP_PACKAGE_UPDATE=${SKIP_PACKAGE_UPDATE:-false}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9001/health"]
       interval: 30s
@@ -120,6 +130,10 @@ volumes:
   claude-config:
   # Redis persistence
   redis-data:
+  # Shared packages: orchestrator installs generacy/agency; workers consume read-only
+  shared-packages:
+  # npm cache: speeds up repeated package installs on orchestrator restart
+  npm-cache:
 
 networks:
   # Isolated cluster network

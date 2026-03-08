@@ -5,24 +5,9 @@
 #   setup-speckit.sh --verify  # Verify speckit is ready (exit 1 if not)
 
 SETUP_LOG="${SETUP_LOG:-/tmp/generacy-setup.log}"
-AGENCY_REPO_URL="${AGENCY_REPO_URL:-https://github.com/generacy-ai/agency}"
-AGENCY_DIR="/workspaces/agency"
 
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] [setup-speckit] $*"
-}
-
-clone_with_retry() {
-    local url="$1" dest="$2" max_attempts=3 attempt=1
-    while [ $attempt -le $max_attempts ]; do
-        if git clone "$url" "$dest" 2>>"$SETUP_LOG"; then
-            return 0
-        fi
-        log "WARNING: Clone attempt $attempt/$max_attempts failed, retrying in ${attempt}s..."
-        sleep $attempt
-        attempt=$((attempt + 1))
-    done
-    return 1
 }
 
 verify_speckit() {
@@ -57,38 +42,21 @@ if [ "$1" = "--verify" ]; then
     exit $?
 fi
 
-# Full setup mode
-log "Ensuring agency repo is available..."
+# Full setup mode — recover speckit via npm (no git clone needed)
+log "Installing @generacy-ai/agency-plugin-spec-kit from npm..."
+npm install -g @generacy-ai/agency-plugin-spec-kit 2>>"$SETUP_LOG" || {
+    log "ERROR: npm install -g @generacy-ai/agency-plugin-spec-kit failed"
+    exit 1
+}
+log "agency-plugin-spec-kit installed"
 
-# Check if agency repo exists, clone if missing
-if [ ! -d "$AGENCY_DIR/.git" ]; then
-    log "Agency repo not found at $AGENCY_DIR, cloning..."
-    if ! clone_with_retry "$AGENCY_REPO_URL" "$AGENCY_DIR"; then
-        log "ERROR: Failed to clone agency repo after 3 attempts"
-        exit 1
-    fi
-    log "Agency repo cloned successfully"
-else
-    log "Agency repo already present at $AGENCY_DIR"
-fi
-
-# Build agency if needed (check for node_modules and dist)
-if [ ! -d "$AGENCY_DIR/node_modules" ] || [ ! -d "$AGENCY_DIR/dist" ]; then
-    log "Building agency..."
-    cd "$AGENCY_DIR"
-    npm install 2>>"$SETUP_LOG" || { log "ERROR: npm install failed in agency"; exit 1; }
-    npm run build 2>>"$SETUP_LOG" || { log "ERROR: npm run build failed in agency"; exit 1; }
-    log "Agency built successfully"
-fi
-
-# Re-run generacy setup build to trigger Phase 4
+# Re-run generacy setup build to trigger Phase 4 (copies command files)
 if command -v generacy >/dev/null 2>&1; then
     log "Re-running generacy setup build..."
     generacy setup build 2>>"$SETUP_LOG" || {
         log "ERROR: generacy setup build failed"
         exit 1
     }
-    log "generacy setup build completed"
 fi
 
 # Verify the result
