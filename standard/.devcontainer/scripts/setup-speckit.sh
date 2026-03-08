@@ -19,12 +19,12 @@ verify_speckit() {
         ok=false
     fi
 
-    # Check for Agency MCP server entry in settings
-    if [ ! -f "$HOME/.claude/settings.json" ]; then
-        log "VERIFY FAIL: ~/.claude/settings.json not found"
+    # Check for Agency MCP server entry in user-level Claude config
+    if [ ! -f "$HOME/.claude.json" ]; then
+        log "VERIFY FAIL: ~/.claude.json not found"
         ok=false
-    elif ! grep -q "agency" "$HOME/.claude/settings.json" 2>/dev/null; then
-        log "VERIFY FAIL: agency MCP server not found in ~/.claude/settings.json"
+    elif ! grep -q "agency" "$HOME/.claude.json" 2>/dev/null; then
+        log "VERIFY FAIL: agency MCP server not found in ~/.claude.json"
         ok=false
     fi
 
