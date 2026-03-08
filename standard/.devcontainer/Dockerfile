@@ -42,6 +42,10 @@ COPY --chmod=755 scripts/ /usr/local/bin/
 # Create workspaces directory with node ownership
 RUN mkdir -p /workspaces && chown -R node:node /workspaces
 
+# Pre-create shared-packages mount point with node ownership
+# (Docker named volumes default to root, causing EACCES for node user)
+RUN mkdir -p /shared-packages && chown node:node /shared-packages
+
 # ╔════════════════════════════════════════════════════════════════════════════╗
 # ║  Customize below: add your project's system dependencies                  ║
 # ║                                                                            ║
