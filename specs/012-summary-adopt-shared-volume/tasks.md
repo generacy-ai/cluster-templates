@@ -10,30 +10,30 @@
 
 ## Phase 1: Docker Image & Compose Infrastructure
 
-- [ ] T001 [US1] Read `standard/.devcontainer/Dockerfile` and remove the `npm install -g @generacy-ai/generacy@preview @generacy-ai/agency@preview` line from the tooling stage
-- [ ] T002 [P] [US1] Read `microservices/.devcontainer/Dockerfile` and remove the `npm install -g @generacy-ai/generacy@preview @generacy-ai/agency@preview` line from the tooling stage
-- [ ] T003 [US1] Read `standard/.devcontainer/docker-compose.yml` and add `shared-packages` and `npm-cache` named volumes; mount `shared-packages:/shared-packages` (rw) and `npm-cache:/home/node/.npm` on orchestrator; mount `shared-packages:/shared-packages:ro` on worker; add `GENERACY_CHANNEL` and `SKIP_PACKAGE_UPDATE` env vars to orchestrator and worker
-- [ ] T004 [P] [US1] Read `microservices/.devcontainer/docker-compose.yml` and apply identical volume and env var changes as T003
+- [X] T001 [US1] Read `standard/.devcontainer/Dockerfile` and remove the `npm install -g @generacy-ai/generacy@preview @generacy-ai/agency@preview` line from the tooling stage
+- [X] T002 [P] [US1] Read `microservices/.devcontainer/Dockerfile` and remove the `npm install -g @generacy-ai/generacy@preview @generacy-ai/agency@preview` line from the tooling stage
+- [X] T003 [US1] Read `standard/.devcontainer/docker-compose.yml` and add `shared-packages` and `npm-cache` named volumes; mount `shared-packages:/shared-packages` (rw) and `npm-cache:/home/node/.npm` on orchestrator; mount `shared-packages:/shared-packages:ro` on worker; add `GENERACY_CHANNEL` and `SKIP_PACKAGE_UPDATE` env vars to orchestrator and worker
+- [X] T004 [P] [US1] Read `microservices/.devcontainer/docker-compose.yml` and apply identical volume and env var changes as T003
 
 ## Phase 2: Orchestrator Entrypoint — npm Install Logic
 
-- [ ] T005 [US1] [US2] [US3] Read `standard/.devcontainer/scripts/entrypoint-orchestrator.sh` and insert the package install block (with `install_packages` function, skip-if-SKIP_PACKAGE_UPDATE logic, version-match marker file check at `/shared-packages/.installed-version`, and `export PATH="/shared-packages/node_modules/.bin:${PATH}"`) before the `generacy setup` calls
-- [ ] T006 [P] [US1] [US2] [US3] Read `microservices/.devcontainer/scripts/entrypoint-orchestrator.sh` and apply identical orchestrator entrypoint changes as T005
+- [X] T005 [US1] [US2] [US3] Read `standard/.devcontainer/scripts/entrypoint-orchestrator.sh` and insert the package install block (with `install_packages` function, skip-if-SKIP_PACKAGE_UPDATE logic, version-match marker file check at `/shared-packages/.installed-version`, and `export PATH="/shared-packages/node_modules/.bin:${PATH}"`) before the `generacy setup` calls
+- [X] T006 [P] [US1] [US2] [US3] Read `microservices/.devcontainer/scripts/entrypoint-orchestrator.sh` and apply identical orchestrator entrypoint changes as T005
 
 ## Phase 3: Worker Entrypoint — Wrapper Scripts & PATH
 
-- [ ] T007 [US1] Read `standard/.devcontainer/scripts/entrypoint-worker.sh` and insert the wrapper script block early in the entrypoint: create `~/.local/bin/generacy` and `~/.local/bin/agency` wrapper scripts pointing to `/shared-packages/node_modules/.bin/`; add `export PATH="${LOCAL_BIN}:${PATH}"` and append to `~/.bashrc`
-- [ ] T008 [P] [US1] Read `microservices/.devcontainer/scripts/entrypoint-worker.sh` and apply identical worker entrypoint changes as T007
+- [X] T007 [US1] Read `standard/.devcontainer/scripts/entrypoint-worker.sh` and insert the wrapper script block early in the entrypoint: create `~/.local/bin/generacy` and `~/.local/bin/agency` wrapper scripts pointing to `/shared-packages/node_modules/.bin/`; add `export PATH="${LOCAL_BIN}:${PATH}"` and append to `~/.bashrc`
+- [X] T008 [P] [US1] Read `microservices/.devcontainer/scripts/entrypoint-worker.sh` and apply identical worker entrypoint changes as T007
 
 ## Phase 4: setup-speckit.sh Recovery Path
 
-- [ ] T009 [US4] Read `standard/.devcontainer/scripts/setup-speckit.sh` and replace the git clone + build fallback with `npm install -g @generacy-ai/agency-plugin-spec-kit` followed by `generacy setup build`; remove `AGENCY_REPO_URL`, `AGENCY_DIR`, `clone_with_retry` function, and the cloned-repo build step
-- [ ] T010 [P] [US4] Read `microservices/.devcontainer/scripts/setup-speckit.sh` and apply identical setup-speckit.sh changes as T009
+- [X] T009 [US4] Read `standard/.devcontainer/scripts/setup-speckit.sh` and replace the git clone + build fallback with `npm install -g @generacy-ai/agency-plugin-spec-kit` followed by `generacy setup build`; remove `AGENCY_REPO_URL`, `AGENCY_DIR`, `clone_with_retry` function, and the cloned-repo build step
+- [X] T010 [P] [US4] Read `microservices/.devcontainer/scripts/setup-speckit.sh` and apply identical setup-speckit.sh changes as T009
 
 ## Phase 5: Validation
 
-- [ ] T011 Build `standard/.devcontainer/Dockerfile` to verify it compiles cleanly: `docker build -f standard/.devcontainer/Dockerfile standard/.devcontainer/`
-- [ ] T012 [P] Build `microservices/.devcontainer/Dockerfile` to verify it compiles cleanly: `docker build -f microservices/.devcontainer/Dockerfile microservices/.devcontainer/`
+- [X] T011 Build `standard/.devcontainer/Dockerfile` to verify it compiles cleanly: `docker build -f standard/.devcontainer/Dockerfile standard/.devcontainer/`
+- [X] T012 [P] Build `microservices/.devcontainer/Dockerfile` to verify it compiles cleanly: `docker build -f microservices/.devcontainer/Dockerfile microservices/.devcontainer/`
 
 ## Dependencies & Execution Order
 

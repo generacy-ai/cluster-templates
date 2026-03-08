@@ -16,6 +16,28 @@ bash /usr/local/bin/setup-credentials.sh
 # Resolve workspace directory (handles devcontainer detection + clone)
 source /usr/local/bin/resolve-workspace.sh
 
+# Set up CLI wrappers pointing to shared packages volume
+SHARED_PACKAGES=/shared-packages
+LOCAL_BIN="${HOME}/.local/bin"
+mkdir -p "${LOCAL_BIN}"
+
+for cli in generacy agency; do
+    WRAPPER="${LOCAL_BIN}/${cli}"
+    cat > "${WRAPPER}" <<EOF
+#!/bin/sh
+exec node ${SHARED_PACKAGES}/node_modules/.bin/${cli} "\$@"
+EOF
+    chmod +x "${WRAPPER}"
+done
+
+# Ensure ~/.local/bin is on PATH for this process and subprocesses
+export PATH="${LOCAL_BIN}:${PATH}"
+if ! grep -q 'local/bin' "${HOME}/.bashrc" 2>/dev/null; then
+    echo 'export PATH="${HOME}/.local/bin:${PATH}"' >> "${HOME}/.bashrc"
+fi
+
+log "CLI wrappers created in ${LOCAL_BIN}"
+
 # Run generacy setup if CLI is available
 if command -v generacy >/dev/null 2>&1; then
     SETUP_LOG="/tmp/generacy-setup.log"
