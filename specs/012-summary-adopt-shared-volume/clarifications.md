@@ -6,7 +6,7 @@
 **Context**: The shared package volume must be mounted at a consistent path in all containers (orchestrator writes, workers read). All entrypoint scripts and wrapper scripts depend on this path. The spec says workers mount the volume "at the same mount path" but never defines what that path is.
 **Question**: What path should the shared package volume be mounted at inside containers (e.g., `/shared/packages`, `/opt/packages`, `/home/node/.shared-packages`)?
 
-**Answer**: *Pending*
+**Answer**: `/shared-packages` — consistent with what tetrad-development already uses, short, self-documenting, doesn't conflict with user home or system paths.
 
 ---
 
@@ -17,7 +17,7 @@
 - B: `@generacy-ai/generacy` + `@generacy-ai/agency-plugin-spec-kit` (as listed in spec assumptions)
 - C: All three: `@generacy-ai/generacy` + `@generacy-ai/agency` + `@generacy-ai/agency-plugin-spec-kit`
 
-**Answer**: *Pending*
+**Answer**: Option C — all three. `@generacy-ai/generacy` is the CLI, `@generacy-ai/agency` is the MCP server (needed for Claude Code integration), and `@generacy-ai/agency-plugin-spec-kit` provides the speckit command `.md` files. They serve different purposes and all are needed for a functioning setup.
 
 ---
 
@@ -28,7 +28,7 @@
 - B: Query npm registry for the dist-tag version; compare against installed version (requires network)
 - C: Other approach?
 
-**Answer**: *Pending*
+**Answer**: Option A — marker file. Write the installed version + channel to `/shared-packages/.installed-version` at install time. On startup, compare without network. Fast, works offline, and aligns with the `SKIP_PACKAGE_UPDATE=true` intent. Users can force an update by deleting the marker or setting the env var.
 
 ---
 
@@ -39,7 +39,7 @@
 - B: A custom path like `/var/cache/npm` (needs `npm config set cache` in entrypoint)
 - C: Let npm auto-determine and just mount a volume at `/home/node/.npm`
 
-**Answer**: *Pending*
+**Answer**: Option A — `/home/node/.npm`. It's the default npm cache location for the node user, so no extra `npm config set` is needed. Just mount a named volume there in compose.
 
 ---
 
@@ -50,4 +50,4 @@
 - B: Use `node_modules/.bin/` symlinks in the shared volume (let npm manage binary links, workers exec the symlink target)
 - C: Dynamic discovery via `npm prefix` / `npm bin` at entrypoint startup
 
-**Answer**: *Pending*
+**Answer**: Option B — use `node_modules/.bin/` symlinks. npm manages these automatically when packages are installed, so wrapper scripts reference e.g. `/shared-packages/node_modules/.bin/generacy`. More resilient than hardcoding internal package paths, avoids overhead of dynamic discovery at startup.

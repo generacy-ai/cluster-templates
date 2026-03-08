@@ -99,13 +99,13 @@ The current `setup-speckit.sh` clones the entire agency repo as a fallback. Repl
 | ID | Requirement | Priority | Notes |
 |----|-------------|----------|-------|
 | FR-001 | Remove baked-in generacy/agency packages from Dockerfiles | P1 | Slims images |
-| FR-002 | Add named shared volume for packages in docker-compose.yml (both variants) | P1 | Orchestrator writes, workers read |
-| FR-003 | Add named npm cache volume in docker-compose.yml (both variants) | P2 | Speeds up repeated installs |
-| FR-004 | Orchestrator entrypoint: install packages from npm to shared volume at startup | P1 | Respects `GENERACY_CHANNEL` |
-| FR-005 | Orchestrator entrypoint: skip install if version already matches | P2 | Avoids unnecessary npm calls |
+| FR-002 | Add named shared volume for packages in docker-compose.yml (both variants), mounted at `/shared-packages` | P1 | Orchestrator writes, workers read |
+| FR-003 | Add named npm cache volume in docker-compose.yml (both variants), mounted at `/home/node/.npm` | P2 | Speeds up repeated installs |
+| FR-004 | Orchestrator entrypoint: install `@generacy-ai/generacy`, `@generacy-ai/agency`, and `@generacy-ai/agency-plugin-spec-kit` from npm to `/shared-packages` at startup | P1 | Respects `GENERACY_CHANNEL` |
+| FR-005 | Orchestrator entrypoint: skip install if version already matches (marker file `/shared-packages/.installed-version`) | P2 | Avoids unnecessary npm calls; works offline |
 | FR-006 | Orchestrator entrypoint: skip install if `SKIP_PACKAGE_UPDATE=true` | P2 | Offline / fast-iteration use |
-| FR-007 | Worker entrypoint: mount shared volume read-only | P1 | Workers do not write |
-| FR-008 | Worker entrypoint: create wrapper scripts in `~/.local/bin/` for each CLI | P1 | No `npm link` |
+| FR-007 | Worker entrypoint: mount shared volume read-only at `/shared-packages` | P1 | Workers do not write |
+| FR-008 | Worker entrypoint: create wrapper scripts in `~/.local/bin/` pointing to `/shared-packages/node_modules/.bin/` symlinks | P1 | No `npm link`; npm manages binary symlinks |
 | FR-009 | Worker entrypoint: add `~/.local/bin` to PATH via export and `~/.bashrc` | P1 | Required for subprocesses |
 | FR-010 | `setup-speckit.sh`: replace git clone fallback with `npm install -g` | P1 | Simpler, correct recovery |
 | FR-011 | Apply changes to both `standard` and `microservices` variants | P1 | Parity requirement |
@@ -124,9 +124,9 @@ The current `setup-speckit.sh` clones the entire agency repo as a fallback. Repl
 
 ## Assumptions
 
-- npm packages `@generacy-ai/generacy` and `@generacy-ai/agency-plugin-spec-kit` will be published before implementation begins
+- npm packages `@generacy-ai/generacy`, `@generacy-ai/agency`, and `@generacy-ai/agency-plugin-spec-kit` will be published before implementation begins
 - The `stable` and `preview` npm dist-tags are maintained on the published packages
-- Worker containers have read access to the shared volume at the same mount path as the orchestrator writes to
+- Worker containers have read access to the shared volume at `/shared-packages`
 
 ## Out of Scope
 
